@@ -9,15 +9,22 @@
 */
 bool do_system(const char *cmd)
 {
-
+	int result=-1;
+	result=system(cmd);
 /*
  * TODO  add your code here
  *  Call the system() function with the command set in the cmd
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
-    return true;
+	if (result != 0)
+	{
+		return false;
+	}
+	else
+	{
+    		return true;
+    	}
 }
 
 /**
@@ -36,6 +43,7 @@ bool do_system(const char *cmd)
 
 bool do_exec(int count, ...)
 {
+
     va_list args;
     va_start(args, count);
     char * command[count+1];
@@ -43,11 +51,65 @@ bool do_exec(int count, ...)
     for(i=0; i<count; i++)
     {
         command[i] = va_arg(args, char *);
+        //printf("parameter number %d is %s \n",i,command[i]);
     }
     command[count] = NULL;
+    va_end(args);
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+    //command[count] = command[count];
+    bool parent = true;
+    int cres=0;
+    int wcheck=1;
+    fflush(stdout);
+    pid_t pid = fork();
+    if ( pid == -1 ) 
+    {
+	printf("forking failed with parameters %s %s %s \n", command[0] , command[1] , command[2]);
+	return false;
+    
+    } 
+    if ( pid == 0 ) 
+    {
+		parent = false;
+    
+    }
+    if( parent ) 
+    {
+    	//code for checking on child process by parent process
+    	printf("parent: starting wait for pid %d for executing parameters %s %s %s \n", pid, command[0] , command[1] , command[2]);
+    	wcheck=waitpid(pid,&cres,0);
+    	if ( wcheck == -1)
+    	{
+    		printf("parent: no correct return of wait, abort for parameters %s %s %s\n", command[0] , command[1] , command[2]);
+    		fflush(stdout);
+    		return false;
+    	}
+    	else
+    	{
+    		printf("parent: code handed for pid %d by wait: %d for parameters %s %s %s \n", pid, cres, command[0] , command[1] , command[2]); 
+    		if ( cres == 0 ) 
+    		{
+    			printf( "parent: ok with execv parameters %s %s %s \n", command[0] , command[1] , command[2]);
+    	   		fflush(stdout);
+    	   		return true;
+    		}
+    		else
+    		{
+    			printf( "parent: nok with execv parameters %s %s %s \n", command[0] , command[1] , command[2]);
+    	   		fflush(stdout);
+    	   		return false;
+    		}
+    	}
+    }
+    else 
+    {
+       printf( "child with pid %d: start execv parameters %s %s %s \n",pid, command[0] , command[1] , command[2]);
+       execv( command[0] , command );
+       //printf( "child: return by error %s\n",  command[0]);
+       exit(EXIT_FAILURE);
+    }
+
 
 /*
  * TODO:
@@ -59,9 +121,6 @@ bool do_exec(int count, ...)
  *
 */
 
-    va_end(args);
-
-    return true;
 }
 
 /**
@@ -78,13 +137,100 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     for(i=0; i<count; i++)
     {
         command[i] = va_arg(args, char *);
+        printf("parameter number %d: %s \n", i, command[i]);
     }
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
-
-
+    //command[count] = command[count];
+    va_end(args);
+    int fd = open(outputfile, O_RDWR|O_CREAT|O_TRUNC);
+    if (fd != -1)
+    {
+        printf("empty file creation ok\n");
+    }
+    else
+    {
+    	printf("empty file creation failed\n");
+    	return false;
+    }
+    
+    bool parent = true;
+    int cres=0;
+    int wcheck=1;
+    fflush(stdout);
+    
+    pid_t pid = fork();
+    if ( pid == -1 ) 
+    {
+	printf("forking failed with parameters %s %s %s \n", command[0] , command[1] , command[2]);
+	return false;
+    
+    } 
+    if ( pid == 0 ) 
+    {
+		parent = false;
+    
+    }
+    if( parent ) 
+    {
+    	//code for checking on child process by parent process
+    	//printf("parent: starting wait for pid %d for executing parameters %s %s %s \n", pid, command[0] , command[1] , command[2]);
+    	wcheck=waitpid(pid,&cres,0);
+    	if ( wcheck == -1)
+    	{
+    		printf("parent: no correct return of wait, abort for parameters %s %s %s\n", command[0] , command[1] , command[2]);
+    		fflush(stdout);
+    		return false;
+    	}
+    	else
+    	{
+    		freopen("/dev/tty", "w", stdout); /*for gcc, ubuntu*/
+    		fsync(fd);
+    		close(fd);
+    		printf("parent: code handed for pid %d by wait: %d for parameters %s %s %s \n", pid, cres, command[0] , command[1] , command[2]); 
+    		if ( cres == 0 ) 
+    		{
+    			printf( "parent: ok with execv parameters %s %s %s \n", command[0] , command[1] , command[2]);
+    	   		fflush(stdout);
+    	   		return true;
+    		}
+    		else
+    		{
+    			printf( "parent: nok with execv parameters %s %s %s \n", command[0] , command[1] , command[2]);
+    	   		fflush(stdout);
+    	   		return false;
+    		}
+    	}
+    }
+    else 
+    {
+       printf( "child with pid %d: start execv parameters %s %s %s \n",pid, command[0] , command[1] , command[2]);
+       dup2(fd,1);
+       execv( command[0] , command );
+       //printf( "child: return by error %s\n",  command[0]);
+       exit(EXIT_FAILURE);
+    }
+    
+    /*
+    va_list args;
+    va_start(args, count);
+    char * command[count+1];
+    int i;
+    for(i=0; i<count; i++)
+    {
+        command[i] = va_arg(args, char *);
+    }
+    command[count] = NULL;
+    va_end(args);
+    printf("target for outputfile: %s \n", outputfile);
+    // this line is to avoid a compile warning before your implementation is complete
+    // and may be removed
+    //command[count] = command[count];
+    close(fd);
+    exit(EXIT_FAILURE);
+    
+    */
 /*
  * TODO
  *   Call execv, but first using https://stackoverflow.com/a/13784315/1446624 as a refernce,
@@ -93,7 +239,8 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *
 */
 
-    va_end(args);
+
+    
 
     return true;
 }
