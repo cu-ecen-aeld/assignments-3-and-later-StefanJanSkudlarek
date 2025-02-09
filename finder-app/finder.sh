@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 #set up variables for input parameters
 CorrParNum=2
@@ -9,13 +9,17 @@ searchstr=$2
 filenum=0
 clinenum=0
 
+echo "check"
 #check if correct number of input parameters was handed over 
-if [ "$#" -ne "$CorrParNum" ]
+#if [ "$#" -ne "$CorrParNum" ]
+
+if [ "$#" != "$CorrParNum" ]
 then
+#	echo "correct number of input parameters: $#, proceed"
+#else
 	echo "wrong number of input parameters: $# instead of $CorrParNum, with the first parameter being the folder to search, and the second being the search string, abort"
 	exit 1
-#else
-#	echo "correct number of input parameters: $#, proceed"
+#else	
 fi
 
 #check if valid directory information was handed over
@@ -23,7 +27,6 @@ if [ ! -d "$filesdir" ]
 then
 	echo "directory $filesdir not found, abort"
 	exit 1	
-	echo "validity directory $filesdir confirmed, proceed"
 #else
 #	echo "validity directory $filesdir confirmed, proceed"
 fi
@@ -38,12 +41,15 @@ output=$(grep -rl  "$searchstr" "$filesdir")
 #loop through matching files and sum up matching lines over all files.
 if [ -n "$output" ]
 then
+#	echo "here we go"
 	for val in $output;
 	do
- 		((filenum=filenum+1))
+#		echo ":check here"
+ 		silencer="$((filenum+=1))"
  		delta=$(grep -c "$searchstr" "$val")
- 		((clinenum=clinenum+delta))
- 		#echo "$val file number $filenum with $delta lines containing the string"
+ 		silencer="$((clinenum+=delta))"
+#		$clinenum=$clinenum+$delta
+#		echo "$val file number $filenum with $delta lines containing the string"
 	done
 fi
 
