@@ -13,7 +13,7 @@ FINDER_APP_DIR=$(realpath $(dirname $0))
 ARCH=arm64
 CROSS_COMPILE=aarch64-none-linux-gnu-
 
-echo "hah"
+echo "haha"
 
 if [ $# -lt 1 ]
 then
