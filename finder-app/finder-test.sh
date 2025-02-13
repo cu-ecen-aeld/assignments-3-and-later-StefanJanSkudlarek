@@ -7,14 +7,30 @@ set -u
 
 NUMFILES=10
 WRITESTR=AELD_IS_FUN
-WRITEDIR=/tmp/aeld-data
+# changes for ass 4 - 2 
+# WRITEDIR=/tmp/aeld-data
 # username=$(cat conf/username.txt)
-# change for ass 4 - 2 
-username=$(cat ../../etc/finder-app/conf/username.txt)
-#add output file for assignment 4 2
-ASS42_WRITEF=/tmp/assignment4-result.txt
-
-
+#backup current directory from which script was invoked and get directory where script is located (should be /usr/bin/ within buildroot target directory, root path)
+CALLP=$(pwd)
+echo "path from which finder-test.sh is called is ${CALLP}"
+cd "$(dirname $0)"
+SCPAT=$(pwd)
+echo "path where finder-test.sh is located is ${SCPAT}"
+#cd to root of buildroot folder or QEMU target
+cd ..
+cd ..
+RPAT=$(pwd)
+echo "root path is ${RPAT}"
+# retrieve username from config file which is located in subfolder etc/finder-app/conf/ of root folder
+username=$(cat etc/finder-app/conf/username.txt)
+echo "retrieved username is ${username}"
+#create output file path demanded by assignment 4 - 2 
+# "c. Modify your finder-test.sh script to write a file with output of the finder command to /tmp/assignment4-result.txt" 
+ASS42_WRITEF="${RPAT}/tmp/assignment4-result.txt"
+echo "new output text file ${ASS42_WRITEF}"
+#return to call path
+WRITEDIR="${RPAT}/tmp/aeld-data/"
+cd "${CALLP}"
 
 if [ $# -lt 3 ]
 then
@@ -28,7 +44,7 @@ then
 else
 	NUMFILES=$1
 	WRITESTR=$2
-	WRITEDIR=/tmp/aeld-data/$3
+	WRITEDIR="${RPAT}/tmp/aeld-data/${3}"
 fi
 
 MATCHSTR="The number of files are ${NUMFILES} and the number of matching lines are ${NUMFILES}"
@@ -40,7 +56,7 @@ rm -rf "${WRITEDIR}"
 # create $WRITEDIR if not assignment1
 # change for ass 4 - 2
 #assignment=`cat ../conf/assignment.txt`
-assignment=$(cat ../../etc/finder-app/conf/assignment.txt)
+assignment=$(cat "${RPAT}/etc/finder-app/conf/assignment.txt")
 
 if [ $assignment != 'assignment1' ]
 then
@@ -62,14 +78,14 @@ fi
 
 for i in $( seq 1 $NUMFILES)
 do
-	./writer "$WRITEDIR/${username}$i.txt" "$WRITESTR"
+	./writer "${WRITEDIR}/${username}$i.txt" "${WRITESTR}"
 done
 
-OUTPUTSTRING=$(./finder.sh "$WRITEDIR" "$WRITESTR")
-echo "${OUTPUTSTRING}" | cat > "$ASS42_WRITEF"
+OUTPUTSTRING=$(./finder.sh "${WRITEDIR}" "${WRITESTR}")
+echo "${OUTPUTSTRING}" | cat > "${ASS42_WRITEF}"
 
 # remove temporary directories
-rm -rf /tmp/aeld-data
+rm -rf "${RPAT}/tmp/aeld-data"
 
 set +e
 echo ${OUTPUTSTRING} | grep "${MATCHSTR}"
