@@ -16,13 +16,14 @@ echo "path from which finder-test.sh is called is ${CALLP}"
 cd "$(dirname $0)"
 SCPAT=$(pwd)
 echo "path where finder-test.sh is located is ${SCPAT}"
-#cd to root of buildroot folder or QEMU target
+#cd to root of buildroot folder or QEMU target (move outwards from usr/bin)
 cd ..
 cd ..
 RPAT=$(pwd)
 echo "root path is ${RPAT}"
 # retrieve username from config file which is located in subfolder etc/finder-app/conf/ of root folder
-username=$(cat etc/finder-app/conf/username.txt)
+username=$(cat "${RPAT}/etc/finder-app/conf/username.txt")
+#username=$(cat "${RPAT}/conf/username.txt")
 echo "retrieved username is ${username}"
 #create output file path demanded by assignment 4 - 2 
 # "c. Modify your finder-test.sh script to write a file with output of the finder command to /tmp/assignment4-result.txt" 
@@ -57,7 +58,8 @@ rm -rf "${WRITEDIR}"
 # change for ass 4 - 2
 #assignment=`cat ../conf/assignment.txt`
 assignment=$(cat "${RPAT}/etc/finder-app/conf/assignment.txt")
-
+#assignment=$(cat "${RPAT}/conf/assignment.txt")
+echo "assignment is ${assignment}"
 if [ $assignment != 'assignment1' ]
 then
 	mkdir -p "$WRITEDIR"
@@ -75,18 +77,19 @@ fi
 #echo "Removing the old writer utility and compiling as a native application"
 #make clean
 #make
+cd "${SCPAT}"
 
 for i in $( seq 1 $NUMFILES)
 do
-	./writer "${WRITEDIR}/${username}$i.txt" "${WRITESTR}"
+	echo $(./writer "${WRITEDIR}/${username}$i.txt" "${WRITESTR}")
 done
-
 OUTPUTSTRING=$(./finder.sh "${WRITEDIR}" "${WRITESTR}")
 echo "${OUTPUTSTRING}" | cat > "${ASS42_WRITEF}"
 
 # remove temporary directories
 rm -rf "${RPAT}/tmp/aeld-data"
 
+cd "${CALLP}"
 set +e
 echo ${OUTPUTSTRING} | grep "${MATCHSTR}"
 if [ $? -eq 0 ]; then
