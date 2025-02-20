@@ -305,7 +305,7 @@ if (daemon_act==true)
 		//check if end of package newline character has been received
 		if (*(rptr + numbytes - 1) == '\n')
 		{	
-			printf("server: received complete package '%s'\n",pptr);
+			//printf("server: received complete package '%s'\n",pptr);
 			
 			//package received completely, append to file and send back complete file
 			
@@ -395,9 +395,9 @@ if (daemon_act==true)
 if(nomore_connect==true)
 {
 	//wait for all connection operations to terminate
-	printf ("parent blocks new connections and waits for all ongoing child connection operations to end\n");
-        waitpid(-1, NULL, 0);
-        printf ("all child connection operations done\n");
+	//printf ("parent blocks new connections and waits for all ongoing child connection operations to end\n");
+        //waitpid(-1, NULL, 0);
+        //printf ("all child connection operations done\n");
 	//close open socket
 	close(sockfd); 	
 	//remove temp file
