@@ -1,10 +1,22 @@
 #!/bin/bash
 
+pushd
+cd "$(dirname $0)"
+SCPAT=$(pwd)
+echo "path where socket server demon start script is located is ${SCPAT}"
+cd ..
+cd ..
+cd usr
+cd bin
+EPAT=$(pwd)
+echo "path where socket server demon executable is located is ${EPAT}"
+popd
+
 case "$1" in
 	start)
 		echo "starting socket server dameon"
 		#native environment
-		#start-stop-daemon -S -n aesdsocket --exec "/home/skudlarek/Documents/server/aesdsocket" -- "-d"
+		#start-stop-daemon -S -n aesdsocket --exec "${EPAT}/aesdsocket" -- "-d"
 		#embedded environment
 		start-stop-daemon -S -n aesdsocket --exec "/usr/bin/aesdsocket" -- "-d" 
 		;;
