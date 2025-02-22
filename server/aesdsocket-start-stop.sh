@@ -1,6 +1,8 @@
 #!/bin/bash
 
-pushd
+
+OPAT=$(pwd)
+echo "path from which script is started is ${OPAT}"
 cd "$(dirname $0)"
 SCPAT=$(pwd)
 echo "path where socket server demon start script is located is ${SCPAT}"
@@ -10,7 +12,7 @@ cd usr
 cd bin
 EPAT=$(pwd)
 echo "path where socket server demon executable is located is ${EPAT}"
-popd
+cd "${OPAT}"
 
 case "$1" in
 	start)
